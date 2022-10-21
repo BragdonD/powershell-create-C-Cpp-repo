@@ -1,3 +1,22 @@
+$C_MAIN_TEMPLATE = "#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char const *argv[])
+{
+    /* code */
+    return 0;
+}
+"
+
+$CPP_MAIN_TEMPLATE = "#include <iostream>
+
+int main(int argc, char const *argv[])
+{
+    /* code */
+    return 0;
+}
+"
+
 Function GetMakefile {
     Param (
         [Parameter(Mandatory=$true)]
@@ -41,7 +60,7 @@ Function GetMakefile {
     }
 }
 
-Function GenerateBasicTemplate {
+Function GenerateDirectoryTemplate {
     Param (
         [Parameter(Mandatory=$true)]
         [String]
@@ -82,6 +101,26 @@ Function GenerateBasicTemplate {
     }
 }
 
+Function GenerateFileTemplate {
+    Param (
+        [Parameter(Mandatory=$true)]
+        [String]
+        $LANG
+    ,
+        [Parameter(Mandatory=$true)]
+        [String]
+        $PATH
+    )
+    Process {
+        if($LANG -eq "c") {
+            New-Item -Path "$PATH\src\main.c" -Value $C_MAIN_TEMPLATE
+        }
+        if($LANG -eq "cpp") {
+            New-Item -Path "$PATH\src\main.cpp" -Value $CPP_MAIN_TEMPLATE
+        }
+    }
+}
+
 Function GenerateProject {
     Param (
         [Parameter(Mandatory=$true)]
@@ -117,7 +156,8 @@ Function GenerateProject {
         else {
             Write-Host "Creating project ${LANG} template in ${PATH}"
         }
-        GenerateBasicTemplate -PATH $PATH -NAME $NAME
+        GenerateDirectoryTemplate -PATH $PATH -NAME $NAME
         GetMakefile -PATH "$PATH\$NAME" -LANG $LANG -SIZE $SIZE
+        GenerateFileTemplate -PATH "$PATH\$NAME" -LANG $LANG
     }
 }
